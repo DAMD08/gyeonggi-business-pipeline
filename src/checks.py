@@ -1,3 +1,21 @@
+import csv 
+import pandas as pd 
+
+def check_duplicates(csv_path):
+    df = pd.read_csv(csv_path, dtype=str)
+    n = df.duplicated().sum()
+    if n: raise CheckFailed(f"{n} duplicados en {csv_path}")
+
+def read_header(csv_path):
+    with open(csv_path, encoding="utf-8", newline="") as f:
+        return next(csv.reader(f))
+
+def check_schema(csv_path, expected_header):
+    got, want = read_header(csv_path), read_header(expected_header)
+    if got != want:
+        added, removed = sorted(set(got) - set(want)), sorted(set(want) - set(got))
+        raise CheckFailed(f"Schema mismatch: \nAdded columns: {added}\nRemoved columns: {removed} \n reordered columns={not added and not removed}")
+
 class CheckFailed(Exception):
     pass
 
